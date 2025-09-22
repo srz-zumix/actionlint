@@ -1480,10 +1480,10 @@ func checkCycles(n *yaml.Node) []*Error {
 		if isAlias {
 			if _, ok := visiting[node]; ok {
 				errs = append(errs, &Error{
-					Message:  fmt.Sprintf("found circular reference of alias %q", node.Value),
-					Line:     node.Line,
-					Column:   node.Column,
-					Kind:     "syntax-check",
+					Message: fmt.Sprintf("found circular reference of alias %q", node.Value),
+					Line:    node.Line,
+					Column:  node.Column,
+					Kind:    "syntax-check",
 				})
 				return
 			}
