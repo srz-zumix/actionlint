@@ -1,0 +1,1 @@
+test.yaml:5:9: found circular reference of alias "r1" [syntax-check]

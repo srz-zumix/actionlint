@@ -1462,14 +1462,62 @@ func handleYAMLError(err error) []*Error {
 	return []*Error{yamlErr(err.Error())}
 }
 
+func checkCycles(n *yaml.Node) []*Error {
+	var errs []*Error
+	visiting := make(map[*yaml.Node]struct{}) // for detecting cycles
+	visited := make(map[*yaml.Node]struct{})  // for memoization
+	var rec func(*yaml.Node)
+	rec = func(node *yaml.Node) {
+		if node == nil {
+			return
+		}
+
+		if _, ok := visited[node]; ok {
+			return
+		}
+
+		isAlias := node.Kind == yaml.AliasNode
+		if isAlias {
+			if _, ok := visiting[node]; ok {
+				errs = append(errs, &Error{
+					Message:  fmt.Sprintf("found circular reference of alias %q", node.Value),
+					Line:     node.Line,
+					Column:   node.Column,
+					Kind:     "syntax-check",
+				})
+				return
+			}
+			visiting[node] = struct{}{}
+		}
+
+		if node.Alias != nil {
+			rec(node.Alias)
+		}
+		for _, child := range node.Content {
+			rec(child)
+		}
+
+		if isAlias {
+			delete(visiting, node)
+		}
+		visited[node] = struct{}{}
+	}
+	rec(n)
+	return errs
+}
+
 // Parse parses given source as byte sequence into workflow syntax tree. It returns all errors
-// detected while parsing the input. It means that detecting one error does not stop parsing. Even
+// detected while parsing theinput. It means that detecting one error does not stop parsing. Even
 // if one or more errors are detected, parser will try to continue parsing and finding more errors.
 func Parse(b []byte) (*Workflow, []*Error) {
 	var n yaml.Node
 
 	if err := yaml.Unmarshal(b, &n); err != nil {
 		return nil, handleYAMLError(err)
+	}
+
+	if errs := checkCycles(&n); len(errs) > 0 {
+		return nil, errs
 	}
 
 	// Uncomment for checking YAML tree
