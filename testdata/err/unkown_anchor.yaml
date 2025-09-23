@@ -1,0 +1,8 @@
+on: push
+jobs:
+  job1:
+    runs-on: &r1
+      - *r2
+  job2:
+    runs-on: &r2
+      - *r1
