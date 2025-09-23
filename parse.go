@@ -1507,7 +1507,7 @@ func checkCycles(n *yaml.Node) []*Error {
 }
 
 // Parse parses given source as byte sequence into workflow syntax tree. It returns all errors
-// detected while parsing theinput. It means that detecting one error does not stop parsing. Even
+// detected while parsing the input. It means that detecting one error does not stop parsing. Even
 // if one or more errors are detected, parser will try to continue parsing and finding more errors.
 func Parse(b []byte) (*Workflow, []*Error) {
 	var n yaml.Node
